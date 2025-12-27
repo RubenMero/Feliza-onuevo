@@ -1,1 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Feliz año nuevo 2026 🎆</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  min-height: 100vh;
+  text-align: center;
+  padding: 40px 20px;
+  overflow-x: hidden;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+p {
+  opacity: 0.9;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 40px auto;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 25px;
+  cursor: pointer;
+  transition: transform 0.3s, background 0.3s;
+  backdrop-filter: blur(6px);
+}
+
+.card:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.card.disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-content {
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 18px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* FIREWORKS */
+#fireworks {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+  z-index: 20;
+}
+
+.spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: explode 1s ease-out forwards;
+}
+
+@keyframes explode {
+  to {
+    transform: translate(var(--x), var(--y));
+    opacity: 0;
+  }
+}
+
+#newyear {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2em;
+  background: rgba(0,0,0,.6);
+  z-index: 21;
+}
+
+/* ADMIN */
+.admin {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  font-size: 12px;
+  opacity: 0.4;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎆 Mensajes Especiales 🎆</h1>
+<p>Haz clic en tu tarjeta</p>
+
+<div class="cards" id="cards"></div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">✖</span>
+    <h2 id="modalName"></h2>
+    <p id="modalMessage"></p>
+  </div>
+</div>
+
+<!-- EFECTOS -->
+<div id="fireworks"></div>
+<div id="newyear">🎆 Feliz Año Nuevo 🎆</div>
+
+<div class="admin" onclick="resetCards()">admin</div>
+
+<script>
+const PASSWORD = "Restablecer"; // cambia si quieres
+
+const messages = [
+{
+id:1,
+name:"Karen Anchundia",
+text:`Gracias por compartir conmigo tantos momentos este año en la U.
+Valoro cada risa, cada conversación y cada recuerdo.
+Nunca pierdas esa sonrisa tan tuya.(Nunca sonries siempre andas brava)
+Perdón si a veces molesté más de la cuenta 😅, espero que el próximo año me aguantes un poco más.
+Te quiero mucho.`
+},
+{
+id:2,
+name:"Yandry Mero",
+text:`Gracias por insistir con el Ing. Robert para darnos la oportunidad de corregir las láminas.
+En serio bro te lucistes.
+Ojalá este nuevo año dejes de tomar. Ya cambia bro.`
+},
+{
+id:3,
+name:"Melanie Anchundia",
+text:`Gracias por incluirme en el grupo de POO aquel dia.
+De no ser por eso tendria q haber hecho un buen examen.
+Te debo ese batido ☺️.
+Sigue con esa actitud tan positiva.
+Y solo quisiera pedirte un pequeño favor… ayudame con tu amiga 😅.`
+},
+{
+id:4,
+name:"Anny",
+text:`Te deseo un año lleno de nuevas oportunidades, aprendizajes y metas claras.
+Que cada etapa que venga sea una oportunidad para crecer.`
+},
+{
+id:5,
+name:"Karen Holguín",
+text:`Gracias por ser una amiga tan linda y por la buena energía que transmites.
+Energia de borracha...
+Sigue adelante con esa actitud tan positiva.
+Pero deja el alcohol...
+Te tengo mucho cariño.
+Y te pido un pequeño favor, espero que me ayudes con tu amiga 😅.`
+}
+];
+
+const cardsContainer = document.getElementById("cards");
+const modal = document.getElementById("modal");
+const modalName = document.getElementById("modalName");
+const modalMessage = document.getElementById("modalMessage");
+
+function renderCards() {
+  cardsContainer.innerHTML = "";
+  messages.forEach(msg => {
+    const used = localStorage.getItem("used_" + msg.id);
+    const card = document.createElement("div");
+    card.className = "card" + (used ? " disabled" : "");
+    card.innerText = msg.name;
+    card.onclick = () => openCard(msg);
+    cardsContainer.appendChild(card);
+  });
+}
+
+function openCard(msg) {
+  modalName.innerText = msg.name;
+  modalMessage.innerText = msg.text;
+  modal.style.display = "flex";
+  localStorage.setItem("used_" + msg.id, true);
+  renderCards();
+}
+
+function closeModal() {
+  modal.style.display = "none";
+  showFireworks();
+}
+
+function showFireworks() {
+  const fw = document.getElementById("fireworks");
+  fw.style.display = "block";
+
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement("div");
+    s.className = "spark";
+    s.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+    s.style.left = "50%";
+    s.style.top = "50%";
+    s.style.setProperty("--x", (Math.random() * 600 - 300) + "px");
+    s.style.setProperty("--y", (Math.random() * 600 - 300) + "px");
+    fw.appendChild(s);
+    setTimeout(() => s.remove(), 1000);
+  }
+
+  document.getElementById("newyear").style.display = "flex";
+  setTimeout(() => {
+    fw.style.display = "none";
+    document.getElementById("newyear").style.display = "none";
+  }, 2000);
+}
+
+function resetCards() {
+  const pass = prompt("Contraseña:");
+  if (pass === PASSWORD) {
+    localStorage.clear();
+    renderCards();
+    alert("Tarjetas restablecidas ✔");
+  }
+}
+
+renderCards();
+</script>
+
+</body>
+</html>
